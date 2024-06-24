@@ -10,7 +10,7 @@ db_params = {
     'user': "gtadmin2",
     'password': 'gtfs####££££'
 }
-
+# gtfs####££££
 # Create a connection to the PostgreSQL server
 conn = psycopg2.connect(
     host=db_params['host'],
@@ -37,6 +37,8 @@ engine = create_engine(f'postgresql://{db_params["user"]}:{db_params["password"]
 
 # Define the file paths for your txt files
 csv_files = {
+    'agency':'Dataset/agency.txt',
+    'calendar':'Dataset/calendar.txt',
     'route': 'Dataset/routes.txt',
     'shape': 'Dataset/shapes.txt',
     'stop_times':'Dataset/stop_times.txt',

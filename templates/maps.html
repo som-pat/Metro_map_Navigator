@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>City Metro Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map { height: 80vh; width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>City Metro Map</h1>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([28.7041, 77.1025], 13); // Default to your city's latitude and longitude
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Fetch stops data passed from the FastAPI backend
+        var stops = {{ stops | tojson | safe }};
+        
+        // Plot each stop on the map
+        stops.forEach(function(stop) {
+            L.marker([stop[2], stop[3]]).addTo(map)
+                .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
+        });
+
+        // Fetch routes data passed from the FastAPI backend
+        var routes = {{ routes | tojson | safe }};
+        
+        // Plot each route on the map
+        for (var route_id in routes) {
+            var route = routes[route_id];
+            var latlngs = route.map(function(coord) {
+                return [coord[0], coord[1]];
+            });
+            L.polyline(latlngs, {color: 'blue'}).addTo(map);
+        }
+    </script>
+</body>
+</html>

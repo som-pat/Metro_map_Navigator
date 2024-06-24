@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>City Metro Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        /* Define the style for the map container to make it a rectangle */
+        #map {
+            width: 80%;   /* Adjust the width as needed */
+            height: 500px; /* Adjust the height as needed */
+            margin: 0 auto; /* Center the map horizontally */
+            border: 2px solid #ccc; /* Optional: Add a border to the map */
+        }
+    </style>
+</head>
+<body>
+    <h1>City Metro Map</h1>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([28.7041, 77.1025], 13); // Set this to default to your city's latitude and longitude
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var stops = {{ stops | tojson | safe }};  // Ensure the stops data is safely converted to JSON
+
+        stops.forEach(function(stop) {
+            L.marker([stop[2], stop[3]]).addTo(map)
+                .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
+        });
+    </script>
+</body>
+</html>
