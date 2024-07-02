@@ -35,7 +35,7 @@ async def check_status():
 async def get_routes():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT route_id,route_short_name,route_long_name,route_type FROM route ORDER BY route_id")
+    cur.execute("SELECT route_id,route_short_name,route_long_name,route_type,route_color,start_point,end_point FROM route ORDER BY route_id")
     rows = cur.fetchall()
     
     formatted_routes = []
@@ -47,6 +47,9 @@ async def get_routes():
                 route_short_name=row[1],
                 route_long_name=row[2],
                 route_type=row[3],
+                route_color=row[4],
+                start_point=row[5],
+                end_point=row[6],
             )
         )
 
@@ -161,15 +164,53 @@ async def get_stop_times():
 
     return formatted_routes
 
-@app.get('/map_stops', response_class=HTMLResponse)
+@app.get('/', response_class=HTMLResponse)
 async def get_map_stops(request: Request):
     conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops")
-    stops = cur.fetchall()
-    cur.close()
+    stopcur = conn.cursor()
+    routecur = conn.cursor()
+    shapecur = conn.cursor()
+
+    # Fetch the stop data
+    stopcur.execute("SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops")
+    stops = stopcur.fetchall()
+
+    # Fetch the route data 
+    routecur.execute("SELECT route_id,route_color,start_point,end_point FROM route Order By route_id")
+    routes = routecur.fetchall()
+
+    #Fetch the shape data
+    shapecur.execute("SELECT shape_id, shape_pt_lat, shape_pt_lon, shape_pt_sequence FROM shape ORDER BY shape_id, shape_pt_sequence")
+    shape_points = shapecur.fetchall()
+    
+    shapecur.close()
+    routecur.close()
+    stopcur.close()
     conn.close()
-    return templates.TemplateResponse("maps.html", {"request": request, "stops": stops})
+    # Attach route's start & endpoint with coordinates
+    stop_coords = {stop[1]: (stop[2], stop[3]) for stop in stops}
+    route_cor = []
+    for route in routes:
+        start_point = stop_coords.get(route[2])
+        end_point = stop_coords.get(route[3])
+        if start_point and end_point:
+            route_cor.append({
+                'route_id':route[0],
+                'color':route[1],
+                'points':[start_point,end_point]
+            })
+    # print(route_cor)
+    shapes = {}
+    for point in shape_points:
+        shape_id = point[0]
+        if shape_id not in shapes:
+            shapes[shape_id] = []
+        shapes[shape_id].append([point[1], point[2]])
+    print(shapes)
+
+    
+    return templates.TemplateResponse("map.html", {"request": request, "stops": stops, 
+                                                   "routes":route_cor,"shapes":shapes})
 
 
 

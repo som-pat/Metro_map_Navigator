@@ -6,6 +6,9 @@ class Route(BaseModel):
     route_short_name: Optional[str] = None
     route_long_name: Optional[str] = None
     route_type: Optional[int] = None
+    route_color:Optional[str] = None
+    start_point:Optional[str] = None
+    end_point:Optional[str] = None
 
 class Stops(BaseModel):
     stop_id :int

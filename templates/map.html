@@ -31,6 +31,23 @@
             L.marker([stop[2], stop[3]]).addTo(map)
                 .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
         });
+
+        // Fetch routes data passed from the FastAPI backend
+        // var routes = {{ routes | tojson | safe }};
+        
+        // // Plot each route on the map
+        // routes.forEach(function(route) {
+        //     var latlngs = route.points;
+        //     L.polyline(latlngs, {color: route.color}).addTo(map);
+        // });
+         // Fetch shape points data passed from the FastAPI backend
+        var shapes = {{ shapes | tojson | safe }};
+        
+        // Plot each shape on the map
+        for (var shape_id in shapes) {
+            var latlngs = shapes[shape_id];
+            L.polyline(latlngs, {color: 'blue'}).addTo(map); // You can customize the color as needed
+        }
     </script>
 </body>
 </html>
