@@ -1,53 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>City Metro Map</title>
+    <title>Metro Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        /* Define the style for the map container to make it a rectangle */
-        #map {
-            width: 80%;   /* Adjust the width as needed */
-            height: 500px; /* Adjust the height as needed */
-            margin: 0 auto; /* Center the map horizontally */
-            border: 2px solid #ccc; /* Optional: Add a border to the map */
-        }
-    </style>
+    <!-- <style>
+        #map { height: 100vh; width: 100%; }
+    </style> -->
 </head>
 <body>
-    <h1>City Metro Map</h1>
-    <div id="map"></div>
-    <script>
-        var map = L.map('map').setView([28.7041, 77.1025], 13); // Set this to default to your city's latitude and longitude
+    <!-- <h1>City Metro Map</h1> -->
+    <div id="map">
+        <div class="map-title">City Metro Map</div>
+        <div class="map-inputs">
+            <input type="text" id="start-point" list = "stop_list" placeholder="From">
+            <input type="text" id="end-point" list = "stop_list" placeholder="To">
+            <datalist id = "stop_list"></datalist>
+            <input type = "submit" value="Search route" onclick="searchRoute()">
+        </div>
 
+    </div>
+    <script>
+        
+        var map = L.map('map').setView([28.7041, 77.1025],12); // Set this to default to your city's latitude and longitude
+        
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 13,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        var stops = {{ stops | tojson | safe }};  // Ensure the stops data is safely converted to JSON
+        var stops = {{ stops | tojson | safe }};// Ensure the stops data is safely converted to JSON
 
+        var datalist = document.getElementById('stop_list');
+        stops.forEach(function(stop){
+            var option = document.createElement('option');
+            option.value = stop[1];
+            datalist.appendChild(option);  
+        });
+
+
+         // Ensure the stops data is safely converted to JSON
         stops.forEach(function(stop) {
             L.marker([stop[2], stop[3]]).addTo(map)
                 .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
         });
 
         // Fetch routes data passed from the FastAPI backend
-        // var routes = {{ routes | tojson | safe }};
+        var routes = {{ routes | tojson | safe }};
         
-        // // Plot each route on the map
-        // routes.forEach(function(route) {
-        //     var latlngs = route.points;
-        //     L.polyline(latlngs, {color: route.color}).addTo(map);
-        // });
-         // Fetch shape points data passed from the FastAPI backend
-        var shapes = {{ shapes | tojson | safe }};
+        // Plot each route on the map
+        routes.forEach(function(route) {
+            var latlngs = route.points;
+            L.polyline(latlngs, {color: route.color}).addTo(map);
+        });
+        map.on('zoomend', function() {
+            var zoomLevel = map.getZoom();
+            var title = document.querySelector('.map-title');
+            var inputs = document.querySelector('.map-inputs');
+            if (zoomLevel < 12) {
+                title.style.display = 'none';
+                inputs.style.display = 'none';
+            } else {
+                title.style.display = 'block';
+                inputs.style.display = 'flex';
+            }
+        });    
+        function searchRoute() {
+            var startPoint = document.getElementById('start-point').value;
+            var endPoint = document.getElementById('end-point').value;
+
+            if (startPoint && endPoint){
+                alert('Searching for route from ${startPoint} to ${endPoint}');
+            }
+            else{
+                alert("Please select both start and end points");
+            }
+            }
         
-        // Plot each shape on the map
-        for (var shape_id in shapes) {
-            var latlngs = shapes[shape_id];
-            L.polyline(latlngs, {color: 'blue'}).addTo(map); // You can customize the color as needed
-        }
+        
     </script>
 </body>
 </html>

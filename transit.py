@@ -1,8 +1,9 @@
 # uvicorn transit:app --reload
 from fastapi import FastAPI, status, Request
-from typing import List, Optional
+from typing import List
 import uvicorn
 import psycopg2
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
 from fastapi.templating import Jinja2Templates
@@ -13,6 +14,8 @@ DATABASE_URL = "postgresql://gtadmin2:gtfsgudu1212@localhost/gtfs_del"
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
 
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -20,6 +23,8 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
@@ -170,53 +175,69 @@ async def get_map_stops(request: Request):
     stopcur = conn.cursor()
     routecur = conn.cursor()
     shapecur = conn.cursor()
+    tripcur  = conn.cursor()
 
     # Fetch the stop data
     stopcur.execute("SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops")
     stops = stopcur.fetchall()
 
     # Fetch the route data 
-    routecur.execute("SELECT route_id,route_color,start_point,end_point FROM route Order By route_id")
+    routecur.execute("SELECT route_id,route_color FROM route Order By route_id")
     routes = routecur.fetchall()
 
     #Fetch the shape data
     shapecur.execute("SELECT shape_id, shape_pt_lat, shape_pt_lon, shape_pt_sequence FROM shape ORDER BY shape_id, shape_pt_sequence")
     shape_points = shapecur.fetchall()
+
+    # fetch the trip data
+    tripcur.execute("Select route_id, shape_id FROM trips")
+    trips = tripcur.fetchall()
     
+    tripcur.close()
     shapecur.close()
     routecur.close()
     stopcur.close()
     conn.close()
+    
     # Attach route's start & endpoint with coordinates
-    stop_coords = {stop[1]: (stop[2], stop[3]) for stop in stops}
-    route_cor = []
-    for route in routes:
-        start_point = stop_coords.get(route[2])
-        end_point = stop_coords.get(route[3])
-        if start_point and end_point:
-            route_cor.append({
-                'route_id':route[0],
-                'color':route[1],
-                'points':[start_point,end_point]
-            })
-    # print(route_cor)
+    # stop_coords = {stop[1]: (stop[2], stop[3]) for stop in stops}
+
     shapes = {}
     for point in shape_points:
         shape_id = point[0]
         if shape_id not in shapes:
             shapes[shape_id] = []
         shapes[shape_id].append([point[1], point[2]])
-    print(shapes)
-
     
+
+        # Map route_id to shape_id
+    route_shape_map = {}
+    for trip in trips:
+        route_id = trip[0]
+        shape_id = trip[1]
+        if route_id not in route_shape_map:
+            route_shape_map[route_id] = shape_id
+    
+    
+    
+    route_cor = []
+    for route in routes:
+        route_id = route[0]
+        shape_id = route_shape_map[route_id]
+
+        if shape_id in shapes:
+            route_cor.append({
+                'route_id':route_id,
+                'color':route[1],
+                'points':shapes[shape_id]
+            })
+
     return templates.TemplateResponse("map.html", {"request": request, "stops": stops, 
                                                    "routes":route_cor,"shapes":shapes})
 
 
 
-@app.post('/routes', status_code=status.HTTP_201_CREATED)
-async def create_new_journey(new_journey:Route):
-    return 'Hello World'
+
 
 
 if __name__ == "__main__":
