@@ -5,12 +5,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- <style>
-        #map { height: 100vh; width: 100%; }
-    </style> -->
+
 </head>
 <body>
-    <!-- <h1>City Metro Map</h1> -->
     <div id="map">
         <div class="map-title">City Metro Map</div>
         <div class="map-inputs">
@@ -23,14 +20,14 @@
     </div>
     <script>
         
-        var map = L.map('map').setView([28.7041, 77.1025],12); // Set this to default to your city's latitude and longitude
+        var map = L.map('map').setView([28.7041, 77.1025],12); //  city's latitude, longitude and initial zoom
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
             maxZoom: 13,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        var stops = {{ stops | tojson | safe }};// Ensure the stops data is safely converted to JSON
+        var stops = {{ stops | tojson | safe }};// stops data is safely converted to JSON
 
         var datalist = document.getElementById('stop_list');
         stops.forEach(function(stop){
@@ -40,7 +37,6 @@
         });
 
 
-         // Ensure the stops data is safely converted to JSON
         stops.forEach(function(stop) {
             L.marker([stop[2], stop[3]]).addTo(map)
                 .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
@@ -75,8 +71,7 @@
             }
             else{
                 alert("Please select both start and end points");
-            }
-            }
+            }}
         
         
     </script>
