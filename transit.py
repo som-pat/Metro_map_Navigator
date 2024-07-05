@@ -3,6 +3,7 @@ from fastapi import FastAPI, status, Request
 from typing import List
 import uvicorn
 import psycopg2
+import heapq
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
@@ -10,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
 
-DATABASE_URL = "postgresql://gtadmin2:gtfsgudu1212@localhost/gtfs_del"
+DATABASE_URL = "postgresql://transitadmin:gtfsuser0000@localhost/gtfs_del"
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
 
@@ -30,11 +31,67 @@ def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     return conn
 
+def construct_graph():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Fetch stops data
+    cur.execute("SELECT stop_id FROM stops")
+    stops = cur.fetchall()
+    
+    # Fetch stop_times and trips data to construct the graph
+    cur.execute("""
+        SELECT st1.stop_id, st2.stop_id, st1.shape_dist_traveled, t.route_id 
+        FROM stop_times st1
+        JOIN stop_times st2 ON st1.trip_id = st2.trip_id AND st1.stop_sequence + 1 = st2.stop_sequence
+        JOIN trips t ON st1.trip_id = t.trip_id
+    """)
+    stop_connections = cur.fetchall()
+    # print(stop_connections)
+    cur.close()
+    conn.close()
+    
+    graph = {stop[0]: [] for stop in stops}
+    
+    for connection in stop_connections:        
+        graph[connection[0]].append((connection[1], connection[2]))
+        graph[connection[1]].append((connection[0], connection[2]))  # Assuming undirected graph    
+        
+
+    return graph
 
 
-@app.get('/status')
-async def check_status():
-    return 'Hello World'
+
+
+def dijkstra(graph, start, end):
+    queue = [(0, start)]
+    distances = {node: float('infinity') for node in graph}
+    distances[start] = 0
+    previous_nodes = {node: None for node in graph}
+    
+    while queue:
+        current_distance, current_node = heapq.heappop(queue)
+        
+        if current_distance > distances[current_node]:
+            continue
+        
+        for neighbor, weight in graph[current_node]:
+            distance = current_distance + weight
+            
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous_nodes[neighbor] = current_node
+                heapq.heappush(queue, (distance, neighbor))
+                
+    path, current_node = [], end
+    while previous_nodes[current_node] is not None:
+        path.append(current_node)
+        current_node = previous_nodes[current_node]
+    if path:
+        path.append(start)
+    return path[::-1]
+
+
 
 @app.get('/routes', response_model=List[Route], status_code=status.HTTP_200_OK)
 async def get_routes():
@@ -63,29 +120,6 @@ async def get_routes():
 
     return formatted_routes  # Ensure the list is returned
 
-@app.get('/stops', response_model=List[Stops], status_code=status.HTTP_200_OK)
-async def get_stops():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops ORDER BY stop_id")
-    rows = cur.fetchall()
-    
-    formatted_routes = []
-
-    for row in rows:
-        formatted_routes.append(
-            Stops(
-                stop_id=row[0],
-                stop_name=row[1],
-                stop_lat=row[2],
-                stop_lon=row[3],
-            )
-        )
-
-    cur.close()
-    conn.close()
-
-    return formatted_routes 
 
 
 @app.get('/trips', response_model=List[Trips], status_code=status.HTTP_200_OK)
@@ -115,59 +149,9 @@ async def get_trips():
     return formatted_routes 
 
 
-@app.get('/trip_shape', response_model=List[Shapes], status_code=status.HTTP_200_OK)
-async def get_trip_shape():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled FROM shape")
-    rows = cur.fetchall()
-    
-    formatted_routes = []
 
-    for row in rows:
-        formatted_routes.append(
-            Shapes(
-                shape_id = row[0],
-                shape_pt_lat = row[1],
-                shape_pt_lon = row[2],
-                shape_pt_sequence = row[3],
-                shape_dist_traveled = row[4],
-            )
-        )
 
-    cur.close()
-    conn.close()
 
-    return formatted_routes
-
-@app.get('/Stop_times', response_model=List[Stop_times], status_code=status.HTTP_200_OK)
-async def get_stop_times():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type,shape_dist_traveled,timepoint FROM stop_times ORDER BY trip_id,stop_id")
-    rows = cur.fetchall()
-    
-    formatted_routes = []
-
-    for row in rows:
-        formatted_routes.append(
-            Stop_times(
-                trip_id = row[0],
-                arrival_time = row[1],
-                departure_time = row[2],
-                stop_id =row[3],
-                stop_sequence=row[4],
-                pickup_type=row[5],
-                drop_off_type=row[6],
-                shape_dist_traveled=row[7],
-                timepoint=row[8],
-            )
-        )
-
-    cur.close()
-    conn.close()
-
-    return formatted_routes
 
 @app.get('/', response_class=HTMLResponse)
 async def get_map_stops(request: Request):
@@ -232,13 +216,47 @@ async def get_map_stops(request: Request):
                 'points':shapes[shape_id]
             })
 
-    return templates.TemplateResponse("map.html", {"request": request, "stops": stops, 
-                                                   "routes":route_cor,"shapes":shapes})
+    return templates.TemplateResponse("map.html", {
+        "request": request, 
+        "stops": stops, 
+        "routes":route_cor,
+        'short_path' :[]})
 
 
 
+@app.post('/search_route', response_class=HTMLResponse)
+async def search_route(request: Request):
+    form = await request.form()
+    start_point = form.get("start_point")
+    end_point = form.get("end_point")
+    
 
-
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT stop_id FROM stops WHERE stop_name = %s", (start_point,))
+    start = cur.fetchone()[0] # type: ignore 
+    cur.execute("SELECT stop_id FROM stops WHERE stop_name = %s", (end_point,))
+    end = cur.fetchone()[0] # type: ignore 
+    cur.close()
+    conn.close()
+    
+    graph = construct_graph()
+    shortest_path = dijkstra(graph, start, end)
+    
+    conn = get_db_connection()
+    stopcur = conn.cursor()
+    stopcur.execute("SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops")
+    stops = stopcur.fetchall()
+    stopcur.close()
+    conn.close()
+    
+    
+    return templates.TemplateResponse("map.html", {
+        "request": request,
+        "stops": stops,
+        'routes':[],  
+        "short_path": shortest_path, 
+    })
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

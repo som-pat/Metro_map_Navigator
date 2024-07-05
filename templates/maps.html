@@ -29,16 +29,10 @@
         });
 
         // Fetch routes data passed from the FastAPI backend
-        var routes = {{ routes | tojson | safe }};
-        
-        // Plot each route on the map
-        for (var route_id in routes) {
-            var route = routes[route_id];
-            var latlngs = route.map(function(coord) {
-                return [coord[0], coord[1]];
-            });
-            L.polyline(latlngs, {color: 'blue'}).addTo(map);
-        }
+      
     </script>
 </body>
 </html>
+
+
+return JSONResponse(content={"path": path_coords})

@@ -7,8 +7,8 @@ from sqlalchemy import create_engine, text
 db_params = {
     'host': "localhost",
     'database':"gtfs_del",
-    'user': "gtadmin2",
-    'password': 'gtfsgudu1212'
+    'user': "transitadmin",
+    'password': 'gtfsuser0000'
 }
 # gtfs####££££
 # Create a connection to the PostgreSQL server

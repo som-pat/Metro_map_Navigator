@@ -5,25 +5,27 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
 
 </head>
 <body>
     <div id="map">
-        <div class="map-title">City Metro Map</div>
-        <div class="map-inputs">
-            <input type="text" id="start-point" list = "stop_list" placeholder="From">
-            <input type="text" id="end-point" list = "stop_list" placeholder="To">
-            <datalist id = "stop_list"></datalist>
-            <input type = "submit" value="Search route" onclick="searchRoute()">
-        </div>
-
+    <div class="map-title">City Metro Map</div>
+    <div class="map-inputs">
+        <form action="/search_route" method="post" id="route-form">
+            <input type="text" id="start_point" name="start_point" list="stop_list" placeholder="From">
+            <input type="text" id="end_point" name="end_point" list="stop_list" placeholder="To">
+            <datalist id="stop_list"></datalist>
+            <input type="submit" value="Search route">
+        </form>
     </div>
+</div>
     <script>
         
         var map = L.map('map').setView([28.7041, 77.1025],12); //  city's latitude, longitude and initial zoom
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-            maxZoom: 13,
+            maxZoom: 14,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
@@ -43,13 +45,72 @@
         });
 
         // Fetch routes data passed from the FastAPI backend
-        var routes = {{ routes | tojson | safe }};
-        
+        var routes = {{ routes | tojson | safe }};        
         // Plot each route on the map
         routes.forEach(function(route) {
             var latlngs = route.points;
             L.polyline(latlngs, {color: route.color}).addTo(map);
         });
+        
+        
+        function plotShortestPath(path) {
+            var latlngs = [];
+            path.forEach(function(stop_id) {
+                var stop = stops.find(s => s[0] === stop_id);
+                if (stop) {
+                    latlngs.push([stop[2], stop[3]]);
+                }
+            });
+            L.polyline(latlngs, {color: 'red', weight: 5}).addTo(map);
+        }
+        
+        
+        
+        var path = {{ short_path | tojson | safe }};
+        console.log(path);
+        if (path){         
+                        
+            plotShortestPath(path);
+            
+        }
+        // function plotShortestPath(path) {
+        //     var latlngs = [];
+        //     path.forEach(function(coords) {
+        //         latlngs.push([coords[0], coords[1]]);
+        //     });
+        //     L.polyline(latlngs, {color: 'red', weight: 4}).addTo(map);
+        // }
+
+        // // Handle form submission
+        // $('#route-form').submit(function(event) {
+        //     event.preventDefault(); // Prevent the form from submitting the traditional way
+        //     var startPoint = $('#start-point').val();
+        //     var endPoint = $('#end-point').val();
+            
+        //     $.ajax({
+        //         type: 'POST',
+        //         url: '/search_route',
+        //         data: {
+        //             start_point: startPoint,
+        //             end_point: endPoint
+        //         },
+        //         success: function(response) {
+        //             if (response.path.length > 0) {
+        //                 plotShortestPath(response.path);
+        //             } else {
+        //                 alert('No route found');
+        //             }
+        //         },
+        //         error: function(error) {
+        //             console.error('Error:', error);
+        //         }
+        //     });
+        // });
+        
+
+
+
+
         map.on('zoomend', function() {
             var zoomLevel = map.getZoom();
             var title = document.querySelector('.map-title');
@@ -62,16 +123,6 @@
                 inputs.style.display = 'flex';
             }
         });    
-        function searchRoute() {
-            var startPoint = document.getElementById('start-point').value;
-            var endPoint = document.getElementById('end-point').value;
-
-            if (startPoint && endPoint){
-                alert('Searching for route from ${startPoint} to ${endPoint}');
-            }
-            else{
-                alert("Please select both start and end points");
-            }}
         
         
     </script>
