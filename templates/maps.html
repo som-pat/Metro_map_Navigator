@@ -29,10 +29,34 @@
         });
 
         // Fetch routes data passed from the FastAPI backend
+                // function plotShortestPath(path) {
+        //     var latlngs = [];
+        //     path.forEach(function(stop_id) {
+        //         var stop = stops.find(s => s[0] === stop_id);
+        //         if (stop) {
+        //             latlngs.push([stop[2], stop[3]]);
+        //         }
+        //     });
+        //     L.polyline(latlngs, {color: 'red', weight: 5}).addTo(map);
+        // }
+        
+        
+        
+        // var path = {{ short_path | tojson | safe }};
+        // console.log(path);
+        // if (path){         
+                        
+        //     plotShortestPath(path);
+        SELECT st1.stop_id, st2.stop_id,
+            EXTRACT(EPOCH FROM (st2.arrival_time::time - st1.departure_time::time)::interval) as travel_time
+        FROM stop_times st1
+        JOIN stop_times st2 
+            ON st1.trip_id = st2.trip_id 
+            AND st1.stop_sequence + 1 = st2.stop_sequence;
+    """
       
     </script>
 </body>
 </html>
 
 
-return JSONResponse(content={"path": path_coords})

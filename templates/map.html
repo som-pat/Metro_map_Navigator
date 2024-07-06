@@ -12,11 +12,11 @@
     <div id="map">
     <div class="map-title">City Metro Map</div>
     <div class="map-inputs">
-        <form action="/search_route" method="post" id="route-form">
+        <form method="post" id="route-form" onsubmit="return searchRoute(event);">
             <input type="text" id="start_point" name="start_point" list="stop_list" placeholder="From">
             <input type="text" id="end_point" name="end_point" list="stop_list" placeholder="To">
             <datalist id="stop_list"></datalist>
-            <input type="submit" value="Search route">
+            <input type="submit" value="Search route" >
         </form>
     </div>
 </div>
@@ -28,6 +28,7 @@
             maxZoom: 14,
             attribution: '© OpenStreetMap'
         }).addTo(map);
+        
 
         var stops = {{ stops | tojson | safe }};// stops data is safely converted to JSON
 
@@ -44,68 +45,61 @@
                 .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
         });
 
+        var routechecker =[];
+
         // Fetch routes data passed from the FastAPI backend
         var routes = {{ routes | tojson | safe }};        
         // Plot each route on the map
         routes.forEach(function(route) {
             var latlngs = route.points;
-            L.polyline(latlngs, {color: route.color}).addTo(map);
+            var polyline = L.polyline(latlngs, {color: route.color}).addTo(map);
+            routechecker.push(polyline);
         });
         
         
-        function plotShortestPath(path) {
-            var latlngs = [];
-            path.forEach(function(stop_id) {
-                var stop = stops.find(s => s[0] === stop_id);
-                if (stop) {
-                    latlngs.push([stop[2], stop[3]]);
-                }
-            });
-            L.polyline(latlngs, {color: 'red', weight: 5}).addTo(map);
-        }
-        
-        
-        
-        var path = {{ short_path | tojson | safe }};
-        console.log(path);
-        if (path){         
-                        
-            plotShortestPath(path);
-            
-        }
-        // function plotShortestPath(path) {
-        //     var latlngs = [];
-        //     path.forEach(function(coords) {
-        //         latlngs.push([coords[0], coords[1]]);
-        //     });
-        //     L.polyline(latlngs, {color: 'red', weight: 4}).addTo(map);
-        // }
 
-        // // Handle form submission
-        // $('#route-form').submit(function(event) {
-        //     event.preventDefault(); // Prevent the form from submitting the traditional way
-        //     var startPoint = $('#start-point').val();
-        //     var endPoint = $('#end-point').val();
-            
-        //     $.ajax({
-        //         type: 'POST',
-        //         url: '/search_route',
-        //         data: {
-        //             start_point: startPoint,
-        //             end_point: endPoint
-        //         },
-        //         success: function(response) {
-        //             if (response.path.length > 0) {
-        //                 plotShortestPath(response.path);
-        //             } else {
-        //                 alert('No route found');
-        //             }
-        //         },
-        //         error: function(error) {
-        //             console.error('Error:', error);
-        //         }
-        //     });
-        // });
+
+        // Function to plot the shortest path
+        function plotShortestPath(path) {
+            routechecker.forEach(function(layer) {
+                map.removeLayer(layer);
+            });
+            routechecker = [];
+
+
+
+            var latlngs = [];
+            console.log(path);
+            path.forEach(function(coords) {
+                console.log(coords[0]);
+                latlngs.push([coords[0], coords[1]]);
+            });
+            var polyline = L.polyline(latlngs, {color: 'teal', weight: 4}).addTo(map);
+            routechecker.push(polyline);
+        }
+
+
+
+
+        function searchRoute(event){
+            event.preventDefault();
+            var formElement = document.getElementById('route-form');
+            var data = new FormData(formElement);
+
+            fetch('/searchRoute',{
+                method:'POST',
+                body: data,
+
+            })
+            .then(resp => resp.json())
+            .then(data =>{
+                plotShortestPath(data.path);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+            return False
+        }
         
 
 

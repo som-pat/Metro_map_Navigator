@@ -41,15 +41,15 @@ csv_files = {
     'calendar':'Dataset/calendar.txt',
     'route': 'Dataset/routes4.txt',
     'shape': 'Dataset/shapes.txt',
-    'stop_times':'Dataset/stop_times.txt',
+    'stop_times':'Dataset/stop_time2.txt',
     'stops': 'Dataset/stops.txt',
     'trips': 'Dataset/trips.txt'
 }
 
 # Load and display the contents of each CSV file to check
-for table_name, file_path in csv_files.items():
-    df = pd.read_csv(file_path)
-    print(df)
+# for table_name, file_path in csv_files.items():
+#     df = pd.read_csv(file_path)
+#     print(df)
 
 # Loop through the CSV files and import them into PostgreSQL
 for table_name, file_path in csv_files.items():

@@ -1,5 +1,5 @@
 # uvicorn transit:app --reload
-from fastapi import FastAPI, status, Request
+from fastapi import FastAPI, status, Request, Form
 from typing import List
 import uvicorn
 import psycopg2
@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse,JSONResponse
 
 
 DATABASE_URL = "postgresql://transitadmin:gtfsuser0000@localhost/gtfs_del"
@@ -30,6 +30,42 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     return conn
+
+
+def construct_graph_with_time():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Fetch stops data
+    cur.execute("SELECT stop_id FROM stops")
+    stops = cur.fetchall()
+    
+    # Fetch stop_times and trips data to construct the graph
+    cur.execute("""
+        SELECT st1.stop_id, st2.stop_id,
+            EXTRACT(EPOCH FROM (st2.arrival_time::time - st1.departure_time::time)::interval) as travel_time
+        FROM stop_times st1
+        JOIN stop_times st2 
+            ON st1.trip_id = st2.trip_id 
+            AND st1.stop_sequence + 1 = st2.stop_sequence;
+    """)
+    stop_connections = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    graph = {stop[0]: [] for stop in stops}
+    
+    for connection in stop_connections:
+        if connection[2] is not None:  # Ensure travel_time is not None
+            graph[connection[0]].append((connection[1], connection[2]))
+    print(graph)
+    return graph
+
+construct_graph_with_time()
+
+
+
+
 
 def construct_graph():
     conn = get_db_connection()
@@ -221,6 +257,34 @@ async def get_map_stops(request: Request):
         "stops": stops, 
         "routes":route_cor,
         'short_path' :[]})
+
+@app.post('/searchRoute',response_class=JSONResponse)
+async def searchRoute(request: Request, start_point: str = Form(...), end_point: str = Form(...)):
+ 
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT stop_id FROM stops WHERE stop_name = %s", (start_point,))
+    start = cur.fetchone()[0] # type: ignore 
+    cur.execute("SELECT stop_id FROM stops WHERE stop_name = %s", (end_point,))
+    end = cur.fetchone()[0] # type: ignore 
+    cur.close()
+    conn.close()
+    
+    graph = construct_graph()
+    shortest_path = dijkstra(graph, start, end)
+
+    path_coords = []
+    conn = get_db_connection()
+    stopcur = conn.cursor()
+    for stop_id in shortest_path:
+        stopcur.execute("SELECT stop_lat, stop_lon FROM stops WHERE stop_id = %s", (stop_id,))
+        stop = stopcur.fetchone()
+        path_coords.append([stop[0], stop[1]])
+    stopcur.close()
+    conn.close()
+    # print(path_coords)
+    return JSONResponse(content={"path": path_coords})      
+
 
 
 
