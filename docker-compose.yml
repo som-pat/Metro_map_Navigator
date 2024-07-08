@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: transitadmin
+      POSTGRES_PASSWORD: gtfsuser0000
+      POSTGRES_DB: gtfs_del
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    command: uvicorn transit:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://transitadmin:gtfsuser0000@db/gtfs_del
+
+volumes:
+  postgres_data:

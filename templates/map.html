@@ -13,13 +13,27 @@
     <div class="map-title">City Metro Map</div>
     <div class="map-inputs">
         <form method="post" id="route-form" onsubmit="return searchRoute(event);">
-            <input type="text" id="start_point" name="start_point" list="stop_list" placeholder="From">
-            <input type="text" id="end_point" name="end_point" list="stop_list" placeholder="To">
-            <datalist id="stop_list"></datalist>
+            <input type="text" id="start_point" name="start_point" list="stop_list" placeholder="From" onchange="highlightMarkers()">
+            <input type="text" id="end_point" name="end_point" list="stop_list" placeholder="To" onchange="highlightMarkers()">
+            <datalist id="stop_list">
+                {% for stop in stops %}
+                    <option value="{{ stop[1] }}">{{ stop[1] }}</option>
+                {% endfor %}
+            </datalist>
             <input type="submit" value="Search route" >
         </form>
     </div>
 </div>
+<div id="route-summary">
+    <h2>Route Summary</h2>
+    <div id="route-details">
+        <ul id="route-list">
+            <!-- List of stops will be populated here -->
+        </ul>
+    </div>
+</div>
+
+
     <script>
         
         var map = L.map('map').setView([28.7041, 77.1025],12); //  city's latitude, longitude and initial zoom
@@ -31,19 +45,27 @@
         
 
         var stops = {{ stops | tojson | safe }};// stops data is safely converted to JSON
+        var markers = {};
+        var startMarker = null;
+        var endMarker = null;
 
-        var datalist = document.getElementById('stop_list');
-        stops.forEach(function(stop){
-            var option = document.createElement('option');
-            option.value = stop[1];
-            datalist.appendChild(option);  
-        });
+        // var datalist = document.getElementById('stop_list');
+        // stops.forEach(function(stop){
+        //     var option = document.createElement('option');
+        //     option.value = stop[1];
+        //     datalist.appendChild(option);  
+        // });
 
 
         stops.forEach(function(stop) {
-            L.marker([stop[2], stop[3]]).addTo(map)
-                .bindPopup(stop[1]); // Assuming stop[1] is the name of the metro stop
+            var marker = L.circleMarker([stop[2], stop[3]], {
+                color: 'blue', // default color
+                radius: 8
+            }).addTo(map)
+            .bindPopup(stop[1]);
+            markers[stop[1]] = marker; // Assuming stop[1] is the name of the metro stop
         });
+            
 
         var routechecker =[];
 
@@ -55,8 +77,40 @@
             var polyline = L.polyline(latlngs, {color: route.color}).addTo(map);
             routechecker.push(polyline);
         });
+        function highlightMarkers() {
+            var startPoint = document.getElementById('start_point').value;
+            var endPoint = document.getElementById('end_point').value;
+
+            // Reset previous markers to default color
+            if (startMarker) {
+                startMarker.setStyle({ color: 'blue' });
+            }
+            if (endMarker) {
+                endMarker.setStyle({ color: 'blue' });
+            }
+
+            // Set new markers to highlighted color
+            if (markers[startPoint]) {
+                startMarker = markers[startPoint];
+                startMarker.setStyle({ color: 'red' });
+            }
+
+            if (markers[endPoint]) {
+                endMarker = markers[endPoint];
+                endMarker.setStyle({ color: 'green' });
+            }
+        }
         
-        
+        function routeDisplay(routeName){
+            var slist = document.getElementById('route-list');
+            slist.innerHTML = ''; 
+            routeName.forEach(function(stop){
+                var li = document.createElement('li');
+                li.textContent = stop;
+                slist.appendChild(li);
+
+            });
+        }
 
 
         // Function to plot the shortest path
@@ -65,16 +119,12 @@
                 map.removeLayer(layer);
             });
             routechecker = [];
-
-
-
             var latlngs = [];
             console.log(path);
             path.forEach(function(coords) {
-                console.log(coords[0]);
                 latlngs.push([coords[0], coords[1]]);
             });
-            var polyline = L.polyline(latlngs, {color: 'teal', weight: 4}).addTo(map);
+            var polyline = L.polyline(latlngs, {color: 'red', weight: 4}).addTo(map);
             routechecker.push(polyline);
         }
 
@@ -85,6 +135,7 @@
             event.preventDefault();
             var formElement = document.getElementById('route-form');
             var data = new FormData(formElement);
+            console.log(data);
 
             fetch('/searchRoute',{
                 method:'POST',
@@ -94,6 +145,7 @@
             .then(resp => resp.json())
             .then(data =>{
                 plotShortestPath(data.path);
+                routeDisplay(data.routeName);
             })
             .catch(error => {
                 console.error(error);
