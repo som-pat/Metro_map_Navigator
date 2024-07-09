@@ -26,6 +26,6 @@ project_root/
 ├── docker-compose.yml
 ├── entrypoint.sh
 ├── requirements.txt
-├── extract_load.py
+├── Extract_load.py
 └── transit.py
 ```
