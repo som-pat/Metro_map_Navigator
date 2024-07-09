@@ -172,7 +172,7 @@ def construct_graph():
 
 
 
-def dijkstra(graph, start, end):
+def ShortestPath(graph, start, end):
     queue = [(0, start)]
     distances = {node: float('inf') for node in graph}
     distances[start] = 0
@@ -215,7 +215,7 @@ async def searchRoute(request: Request, start_point: str = Form(...), end_point:
     conn.close()
     
     graph = construct_graph()
-    shortest_path= dijkstra(graph, start, end)
+    shortest_path= ShortestPath(graph, start, end)
 
     path_coords = []
     route_name = []
