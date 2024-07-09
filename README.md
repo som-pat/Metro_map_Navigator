@@ -9,3 +9,21 @@
 - Highlight start and end points on the map.
 - Use Docker for containerization and PostgreSQL as the database.
 
+Project Structure
+project_root/
+│
+├── Dataset/
+│   ├── agency.txt
+│   ├── calendar.txt
+│   ├── routes4.txt
+│   ├── shapes.txt
+│   ├── stop_time2.txt
+│   ├── stops.txt
+│   └── trips.txt
+│
+├── Dockerfile
+├── docker-compose.yml
+├── entrypoint.sh
+├── requirements.txt
+├── extract_load.py
+└── transit.py
