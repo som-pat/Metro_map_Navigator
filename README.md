@@ -7,9 +7,10 @@
 - Display metro stops on a map.
 - Zoom up and down restricted to a certain level.
 - Find and display the shortest route between two points based on distance and time.
-- Red point indicates Start-Point and Green point indicates End-Point
+- Redpoint indicates Start-Point and Green point indicates End-Point
 - Highlight start and end points on the map.
 - Use Docker for containerization and PostgreSQL as the database.
+  
 
 - Full Map of the Metro Line
 ![Map_metro](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/708147fd-0f24-4031-a62c-2a45b709341c)
@@ -56,3 +57,11 @@ project_root/
 - Database: PostgreSQL
 - Containerization: Docker, Docker Compose
 
+#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static in nature, hence accuracy is not guranteed
+##### GTFS link 
+- [https://gtfs.org/]
+- [https://developers.google.com/transit/gtfs]
+##### Static GTFS dataset
+- [https://otd.delhi.gov.in/data/staticDMRC/]
+- 
+        
