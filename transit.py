@@ -9,12 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import *
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse,JSONResponse
-
+import os
 
 DATABASE_URL = "postgresql://transitadmin:gtfsuser0000@localhost/gtfs_del"
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
-
+# DATABASE_URL = os.getenv('DATABASE_URL')
 
 
 app.add_middleware(
@@ -30,6 +30,40 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     return conn
+
+# @app.get("/")
+# def read_root():
+#     return {"Hello": "World"}
+
+@app.get('/routes', response_model=List[Route], status_code=status.HTTP_200_OK)
+async def get_routes():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT route_id,route_short_name,route_long_name,route_type,route_color,start_point,end_point FROM route ORDER BY route_id")
+    rows = cur.fetchall()
+    
+    formatted_routes = []
+
+    for row in rows:
+        formatted_routes.append(
+            Route(
+                route_id=row[0],
+                route_short_name=row[1],
+                route_long_name=row[2],
+                route_type=row[3],
+                route_color=row[4],
+                start_point=row[5],
+                end_point=row[6],
+            )
+        )
+
+    cur.close()
+    conn.close()
+
+    return formatted_routes 
+
+
+
 
 
 @app.get('/', response_class=HTMLResponse)
@@ -86,6 +120,7 @@ async def get_map_stops(request: Request):
     route_cor = []
     for route in routes:
         route_id = route[0]
+        print(route_id)
         shape_id = route_shape_map[route_id]
 
         if shape_id in shapes:

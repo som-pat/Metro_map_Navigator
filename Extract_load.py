@@ -9,7 +9,7 @@
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
-
+import os
 # Route.txt Conversion
 routes = pd.read_csv('Dataset/routes.txt')
 def seperator(route_long_name):
@@ -59,13 +59,19 @@ time['departure_time'] = time['departure_time'].apply(normalize_time)
 
 # empty the text file if previously used to prevent duplication
 time.to_csv('Dataset/stop_time2.txt', header=True, index=None, sep=',', mode='a') # type: ignore
-
-
+ 
 
 
 
 
 # Define the database connection parameters,change
+# db_params = {
+#     'host': os.getenv('DB_HOST', 'localhost'),
+#     'database': os.getenv('DB_NAME', 'gtfs_del'),
+#     'user': os.getenv('DB_USER', 'transitadmin'),
+#     'password': os.getenv('DB_PASS', 'gtfsuser0000')
+# }
+
 db_params = {
     'host': "localhost",
     'database':"gtfs_del",
@@ -80,7 +86,6 @@ conn = psycopg2.connect(
     user=db_params['user'],
     password=db_params['password']
 )
-
 # Create a cursor object
 cur = conn.cursor()
 
@@ -98,6 +103,7 @@ conn.close()
 engine = create_engine(f'postgresql://{db_params["user"]}:{db_params["password"]}@{db_params["host"]}/{db_params["database"]}')
 
 # Define the file paths for your txt files
+
 csv_files = {
     'agency':'Dataset/agency.txt',
     'calendar':'Dataset/calendar.txt',
@@ -108,12 +114,10 @@ csv_files = {
     'trips': 'Dataset/trips.txt'
 }
 
-# Load and display the contents of each CSV file to check
-# for table_name, file_path in csv_files.items():
-#     df = pd.read_csv(file_path)
-#     print(df)
+
 
 # Loop through the CSV files and import them into PostgreSQL
 for table_name, file_path in csv_files.items():
     df = pd.read_csv(file_path)
     df.to_sql(table_name, engine, if_exists='replace', index=False)
+    print(f"Data from {file_path} has been uploaded to the {table_name} table.")
