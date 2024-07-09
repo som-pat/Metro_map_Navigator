@@ -6,7 +6,8 @@
 
 - Display metro stops on a map.
 - Zoom up and down restricted to a certain level.
-- Find and display the shortest route between two points.
+- Find and display the shortest route between two points based on distance and time.
+- Red point indicates Start-Point and Green point indicates End-Point
 - Highlight start and end points on the map.
 - Use Docker for containerization and PostgreSQL as the database.
 
