@@ -33,14 +33,14 @@ project_root/
 │   ├── stop_time2.txt
 │   ├── stops.txt
 │   └── trips.txt
-|
+│
 ├──Static/
 |  ├──styles.css
-|
+│
 ├──Templates/
-|  ├──map.html
-|
-|  
+│  ├──map.html
+│
+│  
 ├── Dockerfile
 ├── docker-compose.yml
 ├── entrypoint.sh
