@@ -21,7 +21,14 @@ project_root/
 │   ├── stop_time2.txt
 │   ├── stops.txt
 │   └── trips.txt
-│
+|
+├──Static/
+|  ├──styles.css
+|
+├──Templates/
+|  ├──map.html
+|
+|  
 ├── Dockerfile
 ├── docker-compose.yml
 ├── entrypoint.sh
@@ -32,7 +39,8 @@ project_root/
 
 ##Technologies Used:
 
--Frontend: Leaflet.js, HTML, CSS, JavaScript
--Backend: FastAPI, Python
--Database: PostgreSQL
--Containerization: Docker, Docker Compose
+- Frontend: Leaflet.js, HTML, CSS, JavaScript
+- Backend: FastAPI, Python
+- Database: PostgreSQL
+- Containerization: Docker, Docker Compose
+
