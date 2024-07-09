@@ -29,3 +29,10 @@ project_root/
 ├── Extract_load.py
 └── transit.py
 ```
+
+##Technologies Used:
+
+-Frontend: Leaflet.js, HTML, CSS, JavaScript
+-Backend: FastAPI, Python
+-Database: PostgreSQL
+-Containerization: Docker, Docker Compose
