@@ -35,7 +35,7 @@ project_root/
 │   └── trips.txt
 │
 ├──Static/
-|  ├──styles.css
+│  ├──styles.css
 │
 ├──Templates/
 │  ├──map.html
