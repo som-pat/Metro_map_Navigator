@@ -10,6 +10,7 @@
 - Use Docker for containerization and PostgreSQL as the database.
 
 Project Structure
+``` bash
 project_root/
 │
 ├── Dataset/
@@ -27,3 +28,4 @@ project_root/
 ├── requirements.txt
 ├── extract_load.py
 └── transit.py
+```
