@@ -5,9 +5,20 @@
 ## Features
 
 - Display metro stops on a map.
+- Zoom up and down restricted to a certain level.
 - Find and display the shortest route between two points.
 - Highlight start and end points on the map.
 - Use Docker for containerization and PostgreSQL as the database.
+
+- Full Map of the Metro Line
+![Map_metro](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/708147fd-0f24-4031-a62c-2a45b709341c)
+
+- Detailed Route map, input and summary shown only at a certain zoom level
+![detailed_map](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/435a6840-7cae-4c98-b5f2-5c9ee8ef22c4)
+
+- Displaying the Shortest path between selected start and end point
+![Route display](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/1ced9a9e-e0e1-4b2d-a55a-24de8c665098)
+
 
 Project Structure
 ``` bash
