@@ -63,5 +63,4 @@ project_root/
 - [https://developers.google.com/transit/gtfs]
 ##### Static GTFS dataset
 - [https://otd.delhi.gov.in/data/staticDMRC/]
-- 
         
