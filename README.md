@@ -18,7 +18,7 @@
 - Detailed Route map, input and summary shown only at a certain zoom level
 ![detailed_map](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/435a6840-7cae-4c98-b5f2-5c9ee8ef22c4)
 
-- Displaying the Shortest path between selected start and end point
+- Displaying the Shortest path between selected [red] start and [green]end point
 ![updated route display](https://github.com/user-attachments/assets/d28bc92b-bbbc-44c6-8b73-1a39afd93f3d)
 
 
