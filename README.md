@@ -19,7 +19,8 @@
 ![detailed_map](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/435a6840-7cae-4c98-b5f2-5c9ee8ef22c4)
 
 - Displaying the Shortest path between selected start and end point
-![Route display](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/1ced9a9e-e0e1-4b2d-a55a-24de8c665098)
+![updated route display](https://github.com/user-attachments/assets/d28bc92b-bbbc-44c6-8b73-1a39afd93f3d)
+
 
 
 Project Structure
@@ -57,7 +58,7 @@ project_root/
 - Database: PostgreSQL
 - Containerization: Docker, Docker Compose
 
-#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static in nature, hence accuracy is not guranteed
+#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static, hence accuracy is not guaranteed
 ##### GTFS link 
 - [https://gtfs.org/]
 - [https://developers.google.com/transit/gtfs]
