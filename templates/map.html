@@ -24,15 +24,25 @@
         </form>
     </div>
 </div>
-<div id="route-summary">
-    <h2>Route Summary</h2>
-    <div id="route-details">
-        <ul id="route-list">
-            <!-- List of stops will be populated here -->
-        </ul>
-    </div>
-</div>
 
+<div class="route-summary" onclick="toggleRouteDetails()">
+        <h2>Route Summary</h2>
+        <div id="summary-overview">
+            <div id="start-end-points">
+                <b><span id="start-point"></span>
+                <span id="arrow" style="display:none;">&#8674;</span>
+                <span id="end-point"></span></b>
+            </div>
+        </div>
+        <div id="summary-details">
+            <b><span id="total-distance"></span>
+            <br>
+            <span id="total-time"></span></b>
+        </div>
+        <div id="route-details">
+            <ul id="route-list"></ul>
+        </div>
+</div>
 
     <script>
         
@@ -48,21 +58,16 @@
         var markers = {};
         var startMarker = null;
         var endMarker = null;
-
-        // var datalist = document.getElementById('stop_list');
-        // stops.forEach(function(stop){
-        //     var option = document.createElement('option');
-        //     option.value = stop[1];
-        //     datalist.appendChild(option);  
-        // });
+      
 
 
         stops.forEach(function(stop) {
+            st0 = String(stop[0]).concat(" ",stop[1]);
             var marker = L.circleMarker([stop[2], stop[3]], {
-                color: 'blue', // default color
+                color: 'blue', 
                 radius: 8
             }).addTo(map)
-            .bindPopup(stop[1]);
+            .bindPopup(st0);
             markers[stop[1]] = marker; // Assuming stop[1] is the name of the metro stop
         });
             
@@ -77,6 +82,8 @@
             var polyline = L.polyline(latlngs, {color: route.color}).addTo(map);
             routechecker.push(polyline);
         });
+        // Function to change the markers
+        // Markers color change on selection green and red 
         function highlightMarkers() {
             var startPoint = document.getElementById('start_point').value;
             var endPoint = document.getElementById('end_point').value;
@@ -100,17 +107,71 @@
                 endMarker.setStyle({ color: 'green' });
             }
         }
-        
-        function routeDisplay(routeName){
-            var slist = document.getElementById('route-list');
-            slist.innerHTML = ''; 
-            routeName.forEach(function(stop){
-                var li = document.createElement('li');
-                li.textContent = stop;
-                slist.appendChild(li);
 
-            });
-        }
+        function routeD(data) {
+                var slist = document.getElementById('route-list');
+                slist.innerHTML = ''; // empties the slist element
+
+                var start = data.routeName[0];
+                var end = data.routeName[data.routeName.length - 1];
+                var totalDistance = data.dist;
+                var totalTime = data.time;
+                var stopTime = data.stopTime;
+                var previousRoute = null;
+                var isFirstRoute = true;
+                
+
+
+
+                
+                // Display start and end points, and summary details
+                document.getElementById('start-point').textContent = start;
+                document.getElementById('end-point').textContent = end;
+                document.getElementById('total-distance').textContent = `Distance: ${totalDistance} kms`;
+                document.getElementById('total-time').textContent = `Time: ${totalTime} mins`;
+                    // Show arrow if both start and end points are set
+                if (start && end) {
+                    document.getElementById('arrow').style.display = 'inline';
+                } else {
+                    document.getElementById('arrow').style.display = 'none';
+                }
+                // Populate the list with stop names and their respective times along with route color
+                stopTime.forEach(function(stop) {
+                    if (stop.route !== previousRoute) {
+                        var routeLine = document.createElement('li');
+                        routeLine.className = 'route-line';
+                        routeLine.style.backgroundColor = stop.route;
+
+                        if (isFirstRoute){
+                            routeLine.textContent = `${stop.route} line`;
+                            isFirstRoute = false;
+                        } else{
+                            routeLine.textContent = `Change to ${stop.route} line`;
+                        }
+
+                        slist.appendChild(routeLine);
+                        previousRoute = stop.route;
+                    }
+
+                    var li = document.createElement('li');
+                    li.textContent = `${stop.name} : ${stop.time}`;
+                    slist.appendChild(li);
+                });
+                // Show the summary overview
+                document.getElementById('summary-overview').style.display = 'block';
+            }
+            function toggleRouteDetails() {
+                var summaryDetails = document.getElementById('summary-details');
+                var routeDetails = document.getElementById('route-details');
+                if (routeDetails.style.display === 'none') {
+                    routeDetails.style.display = 'block';
+                    summaryDetails.style.display = 'block'; // Show distance and time
+                } else {
+                    routeDetails.style.display = 'none';
+                    summaryDetails.style.display = 'none'; // Hide distance and time
+                }
+            }
+        
 
 
         // Function to plot the shortest path
@@ -120,7 +181,6 @@
             });
             routechecker = [];
             var latlngs = [];
-            console.log(path);
             path.forEach(function(coords) {
                 latlngs.push([coords[0], coords[1]]);
             });
@@ -135,7 +195,6 @@
             event.preventDefault();
             var formElement = document.getElementById('route-form');
             var data = new FormData(formElement);
-            console.log(data);
 
             fetch('/searchRoute',{
                 method:'POST',
@@ -145,12 +204,11 @@
             .then(resp => resp.json())
             .then(data =>{
                 plotShortestPath(data.path);
-                routeDisplay(data.routeName);
+                routeD(data)
             })
             .catch(error => {
                 console.error(error);
             });
-            return False
         }
         
 

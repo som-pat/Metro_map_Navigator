@@ -11,54 +11,54 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 # Route.txt Conversion
-routes = pd.read_csv('Dataset/routes.txt')
-def seperator(route_long_name):
-    parts = route_long_name.split('_')
-    if 'RAPID' in parts:
-        parts[0] ='PURPLE'
-    if 'ORANGE/AIRPORT' in parts:
-        parts[0] ='ORANGE'
-    if 'GRAY' in parts:
-        parts[0] ='#0C0C0C'
-    if 'YELLOW' in parts:
-        parts[0] = '#750E21'
-    if 'MAGENTA' in parts:
-        parts[0] = '#720455'
+# routes = pd.read_csv('Dataset/routes.txt')
+# def seperator(route_long_name):
+#     parts = route_long_name.split('_')
+#     if 'RAPID' in parts:
+#         parts[0] ='PURPLE'
+#     if 'ORANGE/AIRPORT' in parts:
+#         parts[0] ='ORANGE'
+#     if 'GRAY' in parts:
+#         parts[0] ='#0C0C0C'
+#     if 'YELLOW' in parts:
+#         parts[0] = '#750E21'
+#     if 'MAGENTA' in parts:
+#         parts[0] = '#720455'
 
-    color = parts[0] if len(parts)>1 else None
-    if 'to' in parts[-1]:
-        rt = parts[-1].split(' to ')
-        start_point = rt[0]
-        end_point = rt[1]
-    else:
-        start_point=end_point=None
+#     color = parts[0] if len(parts)>1 else None
+#     if 'to' in parts[-1]:
+#         rt = parts[-1].split(' to ')
+#         start_point = rt[0]
+#         end_point = rt[1]
+#     else:
+#         start_point=end_point=None
     
-    return pd.Series([color,start_point,end_point])
+#     return pd.Series([color,start_point,end_point])
 
-routes[['route_color','start_point','end_point']] = routes['route_long_name'].apply(seperator)
-routes = routes.sort_values(by=['route_color'])
-# empty the text file if previously used to prevent duplication
-routes.to_csv('Dataset/routes4.txt', header=True, index=None, sep=',', mode='a') # type: ignore
+# routes[['route_color','start_point','end_point']] = routes['route_long_name'].apply(seperator)
+# routes = routes.sort_values(by=['route_color'])
+# # empty the text file if previously used to prevent duplication
+# routes.to_csv('Dataset/routes4.txt', header=True, index=None, sep=',', mode='a') # type: ignore
 
-# Stop_times.txt conversion
-time = pd.read_csv('Dataset/stop_times.txt')
+# # Stop_times.txt conversion
+# time = pd.read_csv('Dataset/stop_times.txt')
 
-def normalize_time(time_str):
+# def normalize_time(time_str):
     
-    h, m, s = map(int, time_str.split(':'))
-    # Normalize hours if they are 24 or more
-    if h >= 24:
-        h = h % 24
-    # Return the normalized time string
+#     h, m, s = map(int, time_str.split(':'))
+#     # Normalize hours if they are 24 or more
+#     if h >= 24:
+#         h = h % 24
+#     # Return the normalized time string
         
-    return f"{h:02}:{m:02}:{s:02}"
+#     return f"{h:02}:{m:02}:{s:02}"
 
 
-time['arrival_time'] = time['arrival_time'].apply(normalize_time)
-time['departure_time'] = time['departure_time'].apply(normalize_time)
+# time['arrival_time'] = time['arrival_time'].apply(normalize_time)
+# time['departure_time'] = time['departure_time'].apply(normalize_time)
 
-# empty the text file if previously used to prevent duplication
-time.to_csv('Dataset/stop_time2.txt', header=True, index=None, sep=',', mode='a') # type: ignore
+# # empty the text file if previously used to prevent duplication
+# time.to_csv('Dataset/stop_time2.txt', header=True, index=None, sep=',', mode='a') # type: ignore
  
 
 
@@ -109,7 +109,7 @@ csv_files = {
     'calendar':'Dataset/calendar.txt',
     'route': 'Dataset/routes4.txt',
     'shape': 'Dataset/shapes.txt',
-    'stop_times':'Dataset/stop_time2.txt',
+    'stop_times':'Dataset/stop_time3.txt',
     'stops': 'Dataset/stops.txt',
     'trips': 'Dataset/trips.txt'
 }

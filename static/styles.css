@@ -1,3 +1,9 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
 #map {
     /*width: 80%;   /* Adjust the width as needed */
     /*height: 500px; /* Adjust the height as needed */
@@ -37,32 +43,80 @@
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-#route-summary {
+
+.route-summary {
     position: absolute;
-    top: 10px;
-    left: 86%;
-    transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.7);
+    top: 15px;
+    right: 8px;
+    width: 250px;
+    background-color: rgba(255, 255, 255, 0.4);
     padding: 10px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border: 1px solid #ccc;
     border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
     cursor: pointer;
+    transition: height 0.3s;
 }
+
+.route-summary h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5px;
+}
+
+#summary-overview {
+    flex-direction: column;
+    align-items: left;
+    margin-bottom: 10px;
+}
+
+#summary-overview #start-end-points {
+    display: flex;
+    text-align: center;
+    font-size: 1.0em;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#summary-overview #arrow {
+    display: none;
+    transform: scale(2.0);
+}
+
+#summary-details {
+    text-align: center;
+    display: none;
+    font-size: 0.9em;
+}
+
 #route-details {
     display: none;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.7);
     padding: 10px;
     border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
 }
-#route-summary:hover #route-details {
-    display: block;
-}
-#route-summary h2, #route-details ul {
+
+#route-list {
     margin: 0;
     padding: 0;
     list-style-type: none;
+}
+
+#route-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+#route-line {
+    height: 5px;
+    margin: 5px 0;
+    border: none;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+
 }

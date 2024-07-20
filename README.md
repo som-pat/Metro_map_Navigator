@@ -65,3 +65,5 @@ project_root/
 ##### Static GTFS dataset
 - [https://otd.delhi.gov.in/data/staticDMRC/]
         
+##### Delhi Metro route
+- [https://delhimetrorail.info/Images/delhimetro-map_eng.jpg] 
