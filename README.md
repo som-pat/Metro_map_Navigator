@@ -10,6 +10,7 @@
 - Redpoint indicates Start-Point and Green point indicates End-Point
 - Highlight start and end points on the map.
 - Use Docker for containerization and PostgreSQL as the database.
+- Route Summary gives information about total distance and time, Change of Metro Lines and stops to travel along each line with ETA to each stop. 
   
 
 - Full Map of the Metro Line
@@ -19,7 +20,8 @@
 ![detailed_map](https://github.com/som-pat/Metro_map_Navigator/assets/53874321/435a6840-7cae-4c98-b5f2-5c9ee8ef22c4)
 
 - Displaying the Shortest path between selected [red] start and [green]end point
-![updated route display](https://github.com/user-attachments/assets/d28bc92b-bbbc-44c6-8b73-1a39afd93f3d)
+  ![updated 2 route display](https://github.com/user-attachments/assets/966b8891-9097-45d0-bb57-501e4fb29403)
+
 
 
 
@@ -32,7 +34,7 @@ project_root/
 │   ├── calendar.txt
 │   ├── routes4.txt
 │   ├── shapes.txt
-│   ├── stop_time2.txt
+│   ├── stop_time3.txt
 │   ├── stops.txt
 │   └── trips.txt
 │
@@ -58,7 +60,7 @@ project_root/
 - Database: PostgreSQL
 - Containerization: Docker, Docker Compose
 
-#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static, hence accuracy is not guaranteed
+#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static, ETA shown is based on historical data.
 ##### GTFS link 
 - [https://gtfs.org/]
 - [https://developers.google.com/transit/gtfs]
